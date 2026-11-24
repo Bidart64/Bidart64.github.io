@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hayden Veytia</title>
+  <meta name="description" content="Hayden Veytia: software engineer for data pipelines, cloud computing and geospatial data.">
+  <style>
+    /* Same look as lgm-glaciers and ../maps: dark glass cards, green-cyan accent. */
+    :root {
+      --bg: #07080f;
+      --overlay-bg: rgba(15, 15, 26, 0.85);
+      --overlay-border: rgba(255, 255, 255, 0.1);
+      --text: #ffffff;
+      --text-muted: #a0a0b0;
+      --accent: #00d4aa;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.6;
+      background-image: radial-gradient(ellipse 80% 50% at 20% -10%, rgba(0, 212, 170, 0.12), transparent),
+                        radial-gradient(ellipse 60% 40% at 90% 10%, rgba(0, 150, 255, 0.10), transparent);
+      background-attachment: fixed;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .glass {
+      background: var(--overlay-bg);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--overlay-border); border-radius: 16px;
+    }
+    main { max-width: 880px; margin: 0 auto; padding: 4rem 1rem 3rem; }
+    nav { position: sticky; top: 0; z-index: 10; display: flex; justify-content: center; gap: 1.25rem; padding: 0.75rem 1rem;
+          background: rgba(7, 8, 15, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+          border-bottom: 1px solid var(--overlay-border); font-size: 0.9rem; flex-wrap: wrap; }
+    nav a { color: var(--text-muted); }
+    nav a:hover { color: var(--accent); text-decoration: none; }
+
+    header { padding: 2rem 0 2.5rem; }
+    h1 {
+      font-size: clamp(2.2rem, 6vw, 3.4rem); font-weight: 700; letter-spacing: -0.02em; line-height: 1.1;
+      background: linear-gradient(135deg, #00ffaa, #00d4ff);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .role { margin-top: 0.5rem; font-size: 1.1rem; color: var(--text-muted); }
+    .links { display: flex; gap: 0.6rem; margin-top: 1.25rem; flex-wrap: wrap; }
+    .links a { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.45rem 0.9rem; border-radius: 10px;
+               border: 1px solid var(--overlay-border); color: var(--text); font-size: 0.9rem; transition: all 0.2s; }
+    .links a:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; background: rgba(255,255,255,0.04); }
+    .links svg { width: 16px; height: 16px; }
+
+    section { margin-top: 2.75rem; scroll-margin-top: 4rem; }
+    h2 { font-size: 0.8rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 1rem; }
+    .card { padding: 1.4rem 1.5rem; }
+    .card + .card { margin-top: 1rem; }
+    .grid .card + .card { margin-top: 0; }  /* the grid's gap spaces these */
+    .muted { color: var(--text-muted); }
+    p + p { margin-top: 0.75rem; }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+    .interest h3 { font-size: 1.05rem; margin-bottom: 0.4rem; }
+    .interest p { color: var(--text-muted); font-size: 0.95rem; }
+
+    .project { overflow: hidden; padding: 0; }
+    .project img { display: block; width: 100%; height: auto; border-bottom: 1px solid var(--overlay-border); }
+    .project .body { padding: 1.25rem 1.5rem 1.4rem; }
+    .project h3 { font-size: 1.15rem; }
+    .tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.6rem 0 0.8rem; }
+    .tag { font-size: 0.75rem; padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid var(--overlay-border); color: var(--text-muted); }
+    .project .actions { display: flex; gap: 1rem; margin-top: 0.8rem; font-size: 0.9rem; flex-wrap: wrap; }
+
+    .job { display: grid; grid-template-columns: 1fr auto; gap: 0 1rem; }
+    .job h3 { font-size: 1.05rem; }
+    .job .when { color: var(--text-muted); font-size: 0.85rem; text-align: right; white-space: nowrap; }
+    .job .where { color: var(--text-muted); font-size: 0.9rem; grid-column: 1 / -1; }
+    .job ul { grid-column: 1 / -1; margin: 0.6rem 0 0 1.1rem; color: #d6d6e0; font-size: 0.95rem; }
+    .job li + li { margin-top: 0.3rem; }
+
+    .skills { display: grid; grid-template-columns: 9.5rem 1fr; gap: 0.6rem 1rem; font-size: 0.95rem; }
+    .skills dt { color: var(--text-muted); }
+
+    footer { margin-top: 3rem; text-align: center; color: var(--text-muted); font-size: 0.8rem; }
+    @media (max-width: 560px) {
+      .job { grid-template-columns: 1fr; }
+      .job .when { text-align: left; }
+      .skills { grid-template-columns: 1fr; gap: 0.15rem; }
+      .skills dd { margin-bottom: 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="#about">About</a><a href="#interests">Interests</a><a href="#projects">Projects</a>
+    <a href="#experience">Experience</a><a href="#education">Education</a><a href="#skills">Skills</a>
+  </nav>
+
+  <main>
+    <header>
+      <h1>Hayden Veytia</h1>
+      <p class="role">Software engineer · data pipelines, cloud computing &amp; geospatial data</p>
+      <div class="links">
+        <a href="https://github.com/Bidart64">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.53-1.33-1.29-1.69-1.29-1.69-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.71 1.26 3.37.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+          GitHub</a>
+        <a href="https://www.linkedin.com/in/hayden-veytia-2561aa202">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.07 2.07 0 1 1 0-4.14 2.07 2.07 0 0 1 0 4.14zM7.12 20.45H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z"/></svg>
+          LinkedIn</a>
+        <a id="email" href="#contact">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-10 6L2 7"/></svg>
+          <span>Email</span></a>
+      </div>
+    </header>
+
+    <section id="about">
+      <h2>About</h2>
+      <div class="card glass">
+        <p>Software engineer with a mathematics degree and 6+ years building production data systems: pipelines that
+          ingest, validate and process millions of records a day, the cloud infrastructure that runs them, and the testing
+          and release tooling that keeps them reliable. Comfortable taking a system from design to operation, with Python,
+          Go and TypeScript on AWS.</p>
+        <p>Now moving toward research software for glaciology and Earth science, where I want to apply these skills to
+          models, satellite data and field observations. A mountaineer and backcountry skier, at home in remote and cold
+          environments. Native English and French, conversational Spanish.</p>
+      </div>
+    </section>
+
+    <section id="interests">
+      <h2>Interests</h2>
+      <div class="grid">
+        <div class="card glass interest">
+          <h3>Maps, GIS &amp; 3D terrain</h3>
+          <p>Geospatial data, terrain models and interactive 3D maps: from PostGIS schemas and track conflation to
+            rendering past landscapes, like the glaciers that covered Idaho and Wyoming 21,000 years ago.</p>
+        </div>
+        <div class="card glass interest">
+          <h3>Mountains &amp; the outdoors</h3>
+          <p>Mountaineering and backcountry skiing in the ranges of the American West. Glaciers, how they shaped
+            these valleys, and how they are changing today.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects">
+      <h2>Projects</h2>
+      <div class="card glass project">
+        <a href="https://bidart64.github.io/lgm-glaciers/"><img src="assets/lgm-glaciers.jpg" width="960" height="488"
+          alt="3D map of the Lost River Range, Idaho, with glaciers computed for the Last Glacial Maximum"></a>
+        <div class="body">
+          <h3>LGM Glaciers</h3>
+          <div class="tags"><span class="tag">Python</span><span class="tag">NumPy / SciPy</span><span class="tag">Ice-flow modelling</span>
+            <span class="tag">Climate data</span><span class="tag">MapLibre GL</span></div>
+          <p class="muted">Computes where glaciers stood at the Last Glacial Maximum, about 21,000 years ago, and shows them
+            in 3D. A shallow-ice flow model with a degree-day mass balance runs on bedrock topography, driven by PMIP4
+            climate-model output and PRISM 800 m climate, then is checked against mapped moraine extents. Idaho, the Lost
+            River Range and the Wind River Range at 200–500 m resolution.</p>
+          <div class="actions">
+            <a href="https://bidart64.github.io/lgm-glaciers/">Live 3D demo →</a>
+            <a href="https://github.com/Bidart64/lgm-glaciers">Source</a>
+          </div>
+        </div>
+      </div>
+      <div class="card glass project">
+        <div class="body">
+          <h3>Spatial Data Conflation Backend</h3>
+          <div class="tags"><span class="tag">Go</span><span class="tag">PostGIS</span><span class="tag">Docker</span></div>
+          <p class="muted">Ingests heterogeneous track and geospatial data (GPX, FIT, GeoJSON, Shapefile), reconciles
+            overlapping records and stores them in PostGIS, with an async worker pool for large ingestion jobs.</p>
+          <div class="actions"><a href="https://github.com/Bidart64/maps">Source</a></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="experience">
+      <h2>Experience</h2>
+      <div class="card glass job">
+        <h3>Senior Backend Engineer · Tactacam</h3><span class="when">Feb 2024 – Sep 2026</span>
+        <span class="where">Remote</span>
+        <ul>
+          <li>Built and operated the data layer for hundreds of thousands of field-deployed trail cameras: telemetry and
+            images flowing in from devices on intermittent connections, commands and configuration flowing out (AWS IoT Core, MQTT)</li>
+          <li>Ran event-driven ingestion pipelines processing millions of events daily (Lambda, SQS, DynamoDB streams,
+            Kinesis), with retries, idempotency, dead-letter handling and failure recovery</li>
+          <li>Owned the cloud platform for two products end to end: infrastructure as code (CDK, 50+ resources),
+            monitoring, alerting, on-call and incident response</li>
+          <li>Built the testing and release tooling that kept code quality high: fast CI, unit and integration tests,
+            preview environments and staged rollouts</li>
+          <li>Integrated machine-learning models (AWS Bedrock) into production image pipelines; mentored junior engineers</li>
+        </ul>
+      </div>
+      <div class="card glass job">
+        <h3>Software Engineer · TheFork</h3><span class="when">Sep 2022 – Jan 2024</span>
+        <span class="where">Paris, France</span>
+        <ul>
+          <li>Built and maintained APIs across a TypeScript microservices platform serving 20M+ monthly visits, backed by PostgreSQL</li>
+          <li>Cut latency 4x by profiling distributed service calls and rewriting slow database queries</li>
+        </ul>
+      </div>
+      <div class="card glass job">
+        <h3>Lead Backend Engineer · Chainstarters</h3><span class="when">Jul 2020 – Aug 2022</span>
+        <span class="where">Portland, USA</span>
+        <ul>
+          <li>Led backend engineering for the Official app (100K+ users) through its acquisition by Bumble</li>
+          <li>Designed PostgreSQL/PostGIS schemas for geospatial proximity search; set up CI/CD that cut manual deploys by 80%</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="education">
+      <h2>Education</h2>
+      <div class="card glass job">
+        <h3>B.A. Mathematics · Reed College</h3><span class="when">2015 – 2019</span>
+        <span class="where">Thesis: <em>An Encyclopedia of Infinitely Nested Square Roots</em></span>
+      </div>
+      <div class="card glass job">
+        <h3>Student Researcher · Lawrence Berkeley National Laboratory</h3><span class="when">2018</span>
+        <span class="where">Python tools for DNA sequence analysis</span>
+      </div>
+    </section>
+
+    <section id="skills">
+      <h2>Skills</h2>
+      <div class="card glass">
+        <dl class="skills">
+          <dt>Languages</dt><dd>Python, Go, TypeScript, SQL, Bash, Rust (basic), C</dd>
+          <dt>Data &amp; pipelines</dt><dd>Batch and streaming ingestion, validation, PostgreSQL/PostGIS, DynamoDB, geospatial formats</dd>
+          <dt>Cloud &amp; tooling</dt><dd>AWS (Lambda, ECS, S3, SQS, IoT Core, CloudWatch), CDK, Terraform, Docker, Git, CI/CD</dd>
+          <dt>Spoken</dt><dd>English and French (native), Spanish (conversational)</dd>
+        </dl>
+      </div>
+    </section>
+
+    <section id="contact">
+      <h2>Contact</h2>
+      <div class="card glass">
+        <p>The best way to reach me is by email: <a id="email-text" href="#contact">
+          <noscript>haydenveytia [at] gmail [dot] com</noscript></a>. I'm also on
+          <a href="https://www.linkedin.com/in/hayden-veytia-2561aa202">LinkedIn</a> and
+          <a href="https://github.com/Bidart64">GitHub</a>.</p>
+      </div>
+    </section>
+
+    <footer>© Hayden Veytia</footer>
+  </main>
+
+  <script>
+    // The address is put together here rather than written in the page, so simple scrapers don't find it.
+    const address = ['haydenveytia', 'gmail.com'].join('@')
+    for (const id of ['email', 'email-text']) document.getElementById(id).href = `mailto:${address}`
+    document.getElementById('email-text').textContent = address
+  </script>
+</body>
+</html>
