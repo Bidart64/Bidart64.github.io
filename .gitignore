@@ -1,1 +1,4 @@
 .DS_Store
+tools/.peaks-cache.json
+tools/.strava/
+__pycache__/

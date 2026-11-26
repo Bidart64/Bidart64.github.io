@@ -1,0 +1,70 @@
+{
+  "min_ele": 600,
+  "skip": [
+    "Galena Benchmark",
+    "Geyser Hill",
+    "Inspiration Point",
+    "Geltrude Turm",
+    "Athekaleun"
+  ],
+  "rename": {
+    "Larhun": "Larrun",
+    "Orhi": "Pic d'Orhi",
+    "Larrunarri (Txindoki)": "Txindoki"
+  },
+  "add": [
+    {
+      "activity": "19674135627",
+      "name": "Volcán Lonquimay",
+      "ele": 2865,
+      "lat": -38.3791781,
+      "lon": -71.5899091,
+      "note": "track tops out on the crater rim at 2,853 m, 380 m from the mapped summit point"
+    },
+    {
+      "activity": "8295451826",
+      "name": "Durrance Peak",
+      "ele": 2831,
+      "lat": 43.81979,
+      "lon": -114.449905,
+      "note": "not in OpenStreetMap; position and height are the track's high point"
+    },
+    {
+      "activity": "19718442337",
+      "name": "Volcán Sollipulli",
+      "ele": 2196,
+      "lat": -38.960602,
+      "lon": -71.500404,
+      "note": "position and height are the track's high point on the caldera rim; the mapped summit (2,282 m) is 2.4 km away across the caldera"
+    }
+  ],
+  "grades": {
+    "Mount Triumph": "III, 5.5",
+    "Mont Blanc": "PD",
+    "Mount Rainier": "Grade II",
+    "Fremont Peak": "Class 3",
+    "Borah Peak": "Class 3",
+    "Leatherman Peak": "Class 3+",
+    "Mount Church": "Class 3",
+    "Donaldson Peak": "Class 3",
+    "Diamond Peak": "Class 3",
+    "Mount Breitenbach": "Class 3",
+    "Lost River Mountain": "Class 3",
+    "Mount Idaho": "Class 3",
+    "Sacajawea Peak": "Class 4",
+    "Hyndman Peak": "Class 2",
+    "Castle Peak": "Class 3",
+    "Angels Landing": "Class 3",
+    "Mount Hector": "Alpine II",
+    "Little Hector": "Moderate scramble",
+    "Mount Carnarvon": "Difficult scramble",
+    "Mumm Peak": "Class 4",
+    "Volcán Osorno": "PD+",
+    "Ben Nevis": "Scottish winter I",
+    "Càrn Mòr Dearg": "Scottish winter I",
+    "Gran Cir": "Via ferrata A"
+  },
+  "countries": {
+    "United Kingdom": "Scotland"
+  }
+}

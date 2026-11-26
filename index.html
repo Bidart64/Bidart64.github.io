@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Hayden Veytia</title>
   <meta name="description" content="Hayden Veytia: software engineer for data pipelines, cloud computing and geospatial data.">
+  <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+  <script defer src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
   <style>
     /* Same look as lgm-glaciers and ../maps: dark glass cards, green-cyan accent. */
     :root {
@@ -71,6 +73,78 @@
     .tag { font-size: 0.75rem; padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid var(--overlay-border); color: var(--text-muted); }
     .project .actions { display: flex; gap: 1rem; margin-top: 0.8rem; font-size: 0.9rem; flex-wrap: wrap; }
 
+    .summits { padding: 0; overflow: hidden; }
+    .summits .lead { padding: 1.25rem 1.5rem 1rem; }
+    .summits .lead strong { color: var(--text); font-weight: 600; }
+    .summits button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; text-align: left; }
+    .summit-map { position: relative; border-block: 1px solid var(--overlay-border); }
+    #summit-map { height: 460px; background: #0b0d16; scroll-margin-top: 4rem; }
+    #summit-all { position: absolute; top: 10px; left: 10px; font-size: 0.8rem; padding: 0.25rem 0.75rem; border-radius: 999px;
+                  background: rgba(15, 15, 26, 0.85); border: 1px solid var(--overlay-border); }
+    #summit-all:hover { color: var(--accent); border-color: var(--accent); }
+    .summit-list { max-height: 30rem; overflow-y: auto; padding: 0 0.75rem 0.75rem; }
+    .summits .country { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; width: 100%;
+                        padding: 0.7rem 0.75rem 0.5rem; background: #10111c; font-weight: 600; }
+    .summits .country:hover { color: var(--accent); }
+    .summits .country small { color: var(--text-muted); font-weight: 400; margin-left: auto; }
+    .summits .country::before { content: ''; width: 0.45rem; height: 0.45rem; margin: 0.45rem 0.7rem 0 0.1rem; border: solid currentColor;
+                                border-width: 0 2px 2px 0; transform: rotate(45deg); transition: transform 0.15s; }  /* a "v" */
+    .summits .country[aria-expanded="false"]::before { transform: translateY(0.1rem) rotate(-45deg); }  /* folded: ">" */
+    .summits ul { list-style: none; }
+    .summits .peak { display: grid; grid-template-columns: 1fr auto; gap: 0 1rem; width: 100%; padding: 0.5rem 0.75rem;
+                     border-top: 1px solid rgba(255, 255, 255, 0.06); border-radius: 8px; font-size: 0.95rem; }
+    .summits .peak:hover { background: rgba(255, 255, 255, 0.04); }
+    .summits .peak .tag, .summit .tag { white-space: nowrap; margin-left: 0.25rem; }
+    .summits .winter, .summit .winter, .maplibregl-popup-content .winter { color: #8fd8ff; }
+    .tag.winter { border-color: rgba(143, 216, 255, 0.45); }
+    .summits .peak .ele { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .summits .peak small { color: var(--text-muted); font-size: 0.85rem; }
+    .summits .peak .when { grid-column: 1 / -1; color: var(--text-muted); font-size: 0.85rem; }
+    .summits .credit { padding: 0.6rem 1.5rem 0.9rem; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--overlay-border); }
+    .maplibregl-popup-content { background: rgba(15, 15, 26, 0.95); color: var(--text); border: 1px solid var(--overlay-border);
+                                border-radius: 10px; padding: 0.5rem 0.75rem; font: inherit; font-size: 0.85rem; }
+    .maplibregl-popup-content small { color: var(--text-muted); }
+    .maplibregl-popup-tip { display: none; }
+
+    /* A summit's own "page": a window over the site that scrolls and closes. */
+    html:has(dialog[open]) { overflow: hidden; }
+    .summit { width: min(880px, 100vw - 1.5rem); max-height: calc(100dvh - 2rem); margin: auto; padding: 0; overflow-y: auto;
+              background: #0d0e18; color: var(--text); border: 1px solid var(--overlay-border); border-radius: 16px; }
+    .summit::backdrop { background: rgba(4, 5, 10, 0.78); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    .summit .close { position: sticky; top: 0.75rem; float: right; margin: 0.75rem 0.75rem 0 0; z-index: 2; width: 2.25rem; height: 2.25rem;
+                     border-radius: 50%; border: 1px solid var(--overlay-border); background: rgba(15, 15, 26, 0.9); color: var(--text);
+                     font-size: 1rem; cursor: pointer; }
+    .summit .close:hover { color: var(--accent); border-color: var(--accent); }
+    .summit header { padding: 1.5rem 1.5rem 1.1rem; }
+    .summit h3 { font-size: clamp(1.5rem, 4vw, 2rem); line-height: 1.2; margin: 0.1rem 0 0.35rem; }
+    .summit .facts .tag { margin-left: 0.5rem; }
+    #summit-track { height: min(60vh, 520px); background: #0b0d16; border-block: 1px solid var(--overlay-border); }
+    .summit h4 { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem; }
+    .summit .ascents { padding: 1.25rem 1.5rem 1.5rem; }
+    .summit .ascents ul { list-style: none; columns: 16rem; column-gap: 2rem; }
+    .summit .ascents li { padding: 0.2rem 0; break-inside: avoid; }
+    .summit .ascents small { color: var(--text-muted); }
+    .summit .story { padding: 0 1.5rem 1.5rem; color: #d6d6e0; }
+    .summit .story > * + * { margin-top: 0.85rem; }
+    .summit .story h4 { margin-top: 1.5rem; }
+    .summit .story ul { margin-left: 1.1rem; }
+    .summit .story figure { margin-inline: -1.5rem; }
+    .summit .story img { display: block; width: 100%; height: auto; }
+    .summit .story figcaption { padding: 0.4rem 1.5rem 0; font-size: 0.85rem; color: var(--text-muted); }
+    .summit .photos img, .summit .photos video { display: block; width: 100%; height: auto; border-top: 1px solid var(--overlay-border); }
+    .summit .photos img, .summit .story img { cursor: zoom-in; }
+    .viewer { width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; background: #000; overflow: hidden; }
+    .viewer .stage { position: relative; width: 100%; height: 100%; background: #000; }
+    .viewer img { display: block; width: 100%; height: 100%; object-fit: contain; cursor: zoom-out; }
+    .viewer button { position: absolute; width: 2.75rem; height: 2.75rem; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 1.25rem; line-height: 1; cursor: pointer; }
+    .viewer button:hover { border-color: #fff; }
+    .viewer .close { top: 1rem; right: 1rem; }
+    .viewer .prev, .viewer .next { top: calc(50% - 1.375rem); }
+    .viewer .prev { left: 1rem; }
+    .viewer .next { right: 1rem; }
+    .viewer .count { position: absolute; bottom: 1rem; left: 0; right: 0; text-align: center; color: rgba(255, 255, 255, 0.75); font-size: 0.85rem; pointer-events: none; }
+
     .job { display: grid; grid-template-columns: 1fr auto; gap: 0 1rem; }
     .job h3 { font-size: 1.05rem; }
     .job .when { color: var(--text-muted); font-size: 0.85rem; text-align: right; white-space: nowrap; }
@@ -87,13 +161,17 @@
       .job .when { text-align: left; }
       .skills { grid-template-columns: 1fr; gap: 0.15rem; }
       .skills dd { margin-bottom: 0.6rem; }
+      #summit-map { height: 340px; }
+      .summit header, .summit .ascents, .summit .story { padding-inline: 1rem; }
+      .summit .story figure { margin-inline: -1rem; }
+      .summit .story figcaption { padding-inline: 1rem; }
     }
   </style>
 </head>
 <body>
   <nav>
     <a href="#about">About</a><a href="#interests">Interests</a><a href="#projects">Projects</a>
-    <a href="#experience">Experience</a><a href="#education">Education</a><a href="#skills">Skills</a>
+    <a href="#experience">Experience</a><a href="#education">Education</a><a href="#skills">Skills</a><a href="#summits">Summits</a>
   </nav>
 
   <main>
@@ -241,14 +319,273 @@
       </div>
     </section>
 
+    <section id="summits">
+      <h2>Summits</h2>
+      <div class="card glass summits">
+        <p class="lead muted" id="summit-lead">Peaks I have stood on, on foot or on skis. Pick one to open it: the track of the climb in 3D, and when I was there.</p>
+        <div class="summit-map">
+          <div id="summit-map" role="img" aria-label="Map of the summits and the tracks to them"></div>
+          <button id="summit-all">Show all</button>
+        </div>
+        <div class="summit-list" id="summit-list"><p class="lead muted">Loading…</p></div>
+        <p class="credit">Tracks from my <a href="https://www.strava.com">Strava</a> ·
+          Peaks © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors ·
+          Imagery <a href="https://s2maps.eu">Sentinel-2 cloudless</a> by EOX (modified Copernicus Sentinel data 2016–17) · Terrain Mapzen/AWS</p>
+      </div>
+    </section>
+
     <footer>© Hayden Veytia</footer>
   </main>
+
+  <dialog class="summit" id="summit" aria-labelledby="summit-name">
+    <button class="close" aria-label="Close">✕</button>
+    <header>
+      <p class="muted" id="summit-where"></p>
+      <h3 id="summit-name"></h3>
+      <p class="facts" id="summit-facts"></p>
+    </header>
+    <div id="summit-track" role="img" aria-label="3D map of the track to the summit"></div>
+    <div class="ascents"><h4 id="summit-count"></h4><ul id="summit-ascents"></ul></div>
+    <div class="story" id="summit-story"></div>
+    <div class="photos" id="summit-photos"></div>
+  </dialog>
+
+  <dialog class="viewer" id="viewer" aria-label="Photo, full screen">
+    <div class="stage">
+      <img alt="">
+      <button class="close" aria-label="Close">✕</button>
+      <button class="prev" aria-label="Previous photo">‹</button>
+      <button class="next" aria-label="Next photo">›</button>
+      <p class="count"></p>
+    </div>
+  </dialog>
 
   <script>
     // The address is put together here rather than written in the page, so simple scrapers don't find it.
     const address = ['haydenveytia', 'gmail.com'].join('@')
     for (const id of ['email', 'email-text']) document.getElementById(id).href = `mailto:${address}`
     document.getElementById('email-text').textContent = address
+
+    // Summits. summits.json is written by tools/summits.py: the peaks (highest first), each with its ascents, and
+    // the tracks those ascents point to, as encoded polylines. The list works on its own; the maps are added when
+    // their library has loaded. Choosing a peak, in the list or on the map, opens that peak's own "page": a window
+    // over the site with the track in 3D, the ascents, and any text and photos. It has its own address, #summit/<name>.
+    const decode = line => {
+      const out = []
+      for (let i = 0, at = [0, 0]; i < line.length;) {
+        for (const axis of [0, 1]) {
+          let value = 0, shift = 0, byte
+          do { byte = line.charCodeAt(i++) - 63; value |= (byte & 31) << shift; shift += 5 } while (byte >= 32)
+          at[axis] += value & 1 ? ~(value >> 1) : value >> 1
+        }
+        out.push([at[1] / 1e5, at[0] / 1e5])  // longitude first, as maps want it
+      }
+      return out
+    }
+    const day = (date, style = { day: 'numeric', month: 'short', year: 'numeric' }) =>
+      new Date(date + 'T12:00').toLocaleDateString('en-GB', style)
+    const num = n => Math.round(n).toLocaleString('en-US')
+    const el = (tag, text, cls) => { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e }
+    const $ = id => document.getElementById(id)
+
+    addEventListener('DOMContentLoaded', async () => {
+      const list = $('summit-list')
+      let peaks, tracks
+      try { ({ peaks, tracks } = await (await fetch('summits.json')).json()) }
+      catch { list.firstChild.textContent = 'The summit list could not be loaded.'; return }
+      peaks.forEach((p, i) => p.i = i)
+      const lines = tracks.map(decode)
+
+      const ascents = peaks.reduce((n, p) => n + p.ascents.length, 0), first = peaks.map(p => p.ascents[0].date).sort()[0]
+      $('summit-lead').append(' ', el('strong', `${peaks.length} summits`),
+        `, ${ascents} ascents since ${first.slice(0, 4)}. Highest: `, el('strong', `${peaks[0].name}, ${num(peaks[0].ele)} m`), '.')
+
+      // A winter ascent is one made in the calendar winter of the peak's hemisphere (December 21 to March 20 in the
+      // north, June 21 to September 22 in the south). Those are shown in ice blue with a snowflake.
+      for (const p of peaks) for (const a of p.ascents) {
+        const md = a.date.slice(5)
+        a.winter = p.lat >= 0 ? md >= '12-21' || md <= '03-20' : md >= '06-21' && md <= '09-22'
+      }
+      const winters = p => p.ascents.filter(a => a.winter).length
+      const month = { month: 'short', year: 'numeric' }
+      const when = p => p.ascents.length > 3
+        ? `${p.ascents.length} times, ${day(p.ascents[0].date, month)} – ${day(p.ascents.at(-1).date, month)}`
+        : p.ascents.map(a => day(a.date) + (a.sport === 'ski' ? ' on skis' : '')).join(' · ')
+      const dates = p => {  // the same as `when`, as page elements, with the winter ascents marked
+        const out = el('span', null, 'when'), skis = a => a.sport === 'ski' ? ' on skis' : ''
+        if (p.ascents.length > 3) {
+          out.append(when(p))
+          if (winters(p)) out.append(' · ', el('span', `❄ ${winters(p)} in winter`, 'winter'))
+        } else p.ascents.forEach((a, n) => out.append(n ? ' · ' : '', a.winter ? el('span', `❄ ${day(a.date)}${skis(a)}`, 'winter') : day(a.date) + skis(a)))
+        return out
+      }
+      const tags = p => [p.grade && el('span', p.grade, 'tag'), winters(p) && el('span', '❄ Winter', 'tag winter')].filter(Boolean)
+
+      // The list: one block per country, the country with the most summits first, its peaks highest first.
+      // A country's heading folds its peaks away and back.
+      const countries = Object.entries(Object.groupBy(peaks, p => p.country)).sort((a, b) => b[1].length - a[1].length)
+      list.replaceChildren(...countries.flatMap(([country, own]) => {
+        const head = el('button', country, 'country'), ul = el('ul')
+        head.append(el('small', `${own.length} summit${own.length > 1 ? 's' : ''}`))
+        head.setAttribute('aria-expanded', 'true')
+        head.onclick = () => { ul.hidden = !ul.hidden; head.setAttribute('aria-expanded', !ul.hidden) }
+        for (const p of own) {
+          const row = el('button', null, 'peak'), name = el('span', p.name + ' '), height = el('span', `${num(p.ele)} m `, 'ele')
+          if (p.state) name.append(el('small', p.state))
+          name.append(...tags(p))
+          height.append(el('small', `${num(p.ele * 3.28084)} ft`))
+          row.append(name, height, dates(p))
+          row.onclick = () => open(p)
+          const li = el('li'); li.append(row); ul.append(li)
+        }
+        return [head, ul]
+      }))
+
+      // A map: dimmed satellite imagery over 3D terrain, every track, and a dot per peak. One shows all the summits
+      // in the page, another the chosen summit in its window.
+      const makeMap = (container, view) => {
+        const relief = { type: 'raster-dem', encoding: 'terrarium', tileSize: 256, maxzoom: 14, tiles: ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'] }
+        const map = new maplibregl.Map({
+          container, attributionControl: false, maxZoom: 15, maxPitch: 75, ...view,
+          style: { version: 8, sources: {
+            imagery: { type: 'raster', tileSize: 256, maxzoom: 14, tiles: ['https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless_3857/default/g/{z}/{y}/{x}.jpg'] },
+            ground: relief, shade: relief,  // the same terrain twice: once to raise the ground, once to shade it
+          }, layers: [
+            { id: 'imagery', type: 'raster', source: 'imagery', paint: { 'raster-brightness-max': 0.8, 'raster-saturation': -0.25 } },
+            { id: 'shade', type: 'hillshade', source: 'shade', minzoom: 7, paint: { 'hillshade-exaggeration': 0.3, 'hillshade-shadow-color': '#05060c' } },
+          ], terrain: { source: 'ground', exaggeration: 1.2 } },
+        })
+        map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right')
+
+        // Shift + drag turns and tilts the map (the library's own shift + drag, zooming to a drawn box, is switched
+        // off for it). The press is caught before the library sees it, so it does not also move the map.
+        map.boxZoom.disable()
+        map.getCanvasContainer().addEventListener('mousedown', down => {
+          if (!down.shiftKey || down.button !== 0) return
+          down.preventDefault(); down.stopPropagation()
+          let x = down.clientX, y = down.clientY
+          const move = e => {
+            map.jumpTo({ bearing: map.getBearing() + (e.clientX - x) * 0.8,
+                         pitch: Math.max(0, Math.min(map.getMaxPitch(), map.getPitch() - (e.clientY - y) * 0.5)) })
+            x = e.clientX; y = e.clientY
+          }
+          const up = () => { removeEventListener('mousemove', move); removeEventListener('mouseup', up) }
+          addEventListener('mousemove', move); addEventListener('mouseup', up)
+        }, true)
+
+        map.on('load', () => {
+          map.addSource('tracks', { type: 'geojson', data: { type: 'FeatureCollection', features: lines.map((coordinates, id) =>
+            ({ type: 'Feature', properties: { id }, geometry: { type: 'LineString', coordinates } })) } })
+          map.addSource('peaks', { type: 'geojson', data: { type: 'FeatureCollection', features: peaks.map(p =>
+            ({ type: 'Feature', properties: { i: p.i, ele: p.ele }, geometry: { type: 'Point', coordinates: [p.lon, p.lat] } })) } })
+          const round = { 'line-cap': 'round', 'line-join': 'round' }, none = ['==', ['get', 'i'], -1]
+          map.addLayer({ id: 'tracks', type: 'line', source: 'tracks', layout: round, paint: { 'line-color': '#00d4aa', 'line-width': 2, 'line-opacity': 0.8 } })
+          map.addLayer({ id: 'tracks-on', type: 'line', source: 'tracks', layout: round, filter: none, paint: { 'line-color': '#ffffff', 'line-width': 3.5 } })
+          map.addLayer({ id: 'peaks', type: 'circle', source: 'peaks', layout: { 'circle-sort-key': ['get', 'ele'] },
+            paint: { 'circle-radius': ['interpolate', ['linear'], ['zoom'], 1, 3.5, 10, 6], 'circle-color': '#07080f', 'circle-stroke-color': '#00ffaa', 'circle-stroke-width': 2 } })
+          map.addLayer({ id: 'peak-on', type: 'circle', source: 'peaks', filter: none,
+            paint: { 'circle-radius': 8, 'circle-color': '#ffffff', 'circle-stroke-color': '#00d4aa', 'circle-stroke-width': 3 } })
+
+          // Pointing at a peak names it; clicking it opens it.
+          const tip = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12 })
+          map.on('mousemove', 'peaks', e => {
+            const p = peaks[e.features[0].properties.i], body = el('div')
+            body.append(el('strong', p.name), el('br'), el('small', `${num(p.ele)} m · ${p.grade ? p.grade + ' · ' : ''}${when(p)}`))
+            if (winters(p)) body.append(' ', el('small', '❄ winter', 'winter'))
+            map.getCanvas().style.cursor = 'pointer'
+            tip.setLngLat([p.lon, p.lat]).setDOMContent(body).addTo(map)
+          })
+          map.on('mouseleave', 'peaks', () => { map.getCanvas().style.cursor = ''; tip.remove() })
+          map.on('click', 'peaks', e => open(peaks[e.features[0].properties.i]))
+        })
+        return map
+      }
+      const around = own => own.reduce((b, p) => b.extend([p.lon, p.lat]), new maplibregl.LngLatBounds())
+      if (window.maplibregl) {
+        const all = makeMap('summit-map', { bounds: around(peaks), fitBoundsOptions: { padding: 60 } })
+        $('summit-all').onclick = () => all.fitBounds(around(peaks), { padding: 60, pitch: 0, bearing: 0 })
+      }
+
+      // A summit's window. Its map is made the first time one is opened, and starts above the tracks to the summit
+      // before tilting down to look from the start of the latest climb toward the top.
+      const window_ = $('summit'), sports = { hike: 'hike', run: 'trail run', ski: 'ski tour', snowshoe: 'snowshoes', climb: 'climb' }
+      let shown, close_up
+      const frame = () => {
+        const p = shown, own = p.ascents.map(a => a.track), box = new maplibregl.LngLatBounds().extend([p.lon, p.lat])
+        for (const t of own) for (const at of lines[t]) box.extend(at)
+        const [lon, lat] = lines[own.at(-1)][0], east = (p.lon - lon) * Math.cos(p.lat * Math.PI / 180)
+        close_up.resize()
+        close_up.setFilter('tracks-on', ['in', ['get', 'id'], ['literal', own]])
+        close_up.setFilter('peak-on', ['==', ['get', 'i'], p.i])
+        close_up.setPaintProperty('tracks', 'line-opacity', 0.3)
+        close_up.fitBounds(box, { padding: 50, maxZoom: 13.5, pitch: 0, bearing: 0, duration: 0 })
+        close_up.fitBounds(box, { padding: 50, maxZoom: 13.5, pitch: 62, bearing: Math.atan2(east, p.lat - lat) * 180 / Math.PI, duration: 2500 })
+      }
+      const open = (p, record = true) => {
+        shown = p
+        $('summit-where').textContent = [p.state, p.country].filter(Boolean).join(', ')
+        $('summit-name').textContent = p.name
+        $('summit-facts').replaceChildren(`${num(p.ele)} m · ${num(p.ele * 3.28084)} ft`, ...tags(p))
+        $('summit-count').textContent = p.ascents.length > 1 ? `${p.ascents.length} ascents` : 'Ascent'
+        $('summit-ascents').replaceChildren(...p.ascents.map(a => {
+          const li = el('li', day(a.date) + ' '); li.append(el('small', sports[a.sport] ?? a.sport))
+          if (a.winter) li.append(' ', el('small', '❄ winter', 'winter'))
+          return li
+        }))
+        $('summit-story').innerHTML = p.text  // written by tools/summits.py from my own text, already made safe there
+        $('summit-story').hidden = !p.text
+        $('summit-photos').replaceChildren(...p.photos.map(src => {
+          if (src.endsWith('.mp4')) {  // nothing is downloaded until it is played: the poster is a still from it
+            const film = el('video'); film.src = src; film.controls = true; film.preload = 'none'; film.playsInline = true
+            film.poster = src.replace('.mp4', '.poster.jpg'); film.setAttribute('aria-label', `Video from ${p.name}`); return film
+          }
+          const img = el('img'); img.src = src; img.loading = 'lazy'; img.alt = `Photo from ${p.name}`; return img
+        }))
+        if (!window_.open) window_.showModal()
+        window_.scrollTop = 0
+        if (record) history.pushState(null, '', `#summit/${p.slug}`)
+        if (!window.maplibregl) return
+        if (!close_up) { close_up = makeMap('summit-track', { center: [p.lon, p.lat], zoom: 10 }); close_up.once('load', frame) }
+        else if (close_up.getLayer('peak-on')) frame()
+      }
+      window_.querySelector('.close').onclick = () => window_.close()
+
+      // A click on a photo shows it alone on the whole screen. It closes with the ✕, Esc or a click on the photo, and
+      // the arrows (on screen or on the keyboard) go through the summit's other photos.
+      const viewer = $('viewer'), stage = viewer.querySelector('.stage'), big = viewer.querySelector('img')
+      let shots = [], at = 0
+      const show = i => {
+        at = (i + shots.length) % shots.length
+        big.src = shots[at].currentSrc || shots[at].src
+        big.alt = shots[at].alt
+        viewer.querySelector('.count').textContent = shots.length > 1 ? `${at + 1} / ${shots.length}` : ''
+        for (const b of viewer.querySelectorAll('.prev, .next')) b.hidden = shots.length < 2
+      }
+      window_.addEventListener('click', e => {
+        if (!e.target.matches('.photos img, .story img')) return
+        shots = [...window_.querySelectorAll('.story img, .photos img')]
+        show(shots.indexOf(e.target))
+        viewer.showModal()
+        stage.requestFullscreen?.().catch(() => {})  // where the browser refuses, it still fills the window
+      })
+      viewer.querySelector('.prev').onclick = () => show(at - 1)
+      viewer.querySelector('.next').onclick = () => show(at + 1)
+      viewer.querySelector('.close').onclick = big.onclick = () => viewer.close()
+      viewer.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') show(at - 1); if (e.key === 'ArrowRight') show(at + 1) })
+      viewer.addEventListener('close', () => { if (document.fullscreenElement) document.exitFullscreen() })
+      document.addEventListener('fullscreenchange', () => { if (!document.fullscreenElement && viewer.open) viewer.close() })  // Esc left full screen
+      window_.onclick = e => { if (e.target === window_) window_.close() }  // a click outside the window, on the dimmed page
+      window_.addEventListener('close', () => { if (location.hash.startsWith('#summit/')) history.pushState(null, '', '#summits') })
+
+      // The address decides what is open, so a summit's link opens it and the back button closes it.
+      const route = () => {
+        const p = peaks.find(p => location.hash === `#summit/${p.slug}`)
+        if (p) open(p, false)
+        else if (window_.open) window_.close()
+      }
+      addEventListener('popstate', route)
+      route()
+    })
   </script>
 </body>
 </html>
